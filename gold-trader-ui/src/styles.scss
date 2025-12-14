@@ -1,0 +1,257 @@
+@import '~@angular/material/prebuilt-themes/indigo-pink.css';
+
+// Global styles
+* {
+  margin: 0;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+// App container
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f5f5f5;
+}
+
+// Chart container
+.chart-container {
+  flex: 1;
+  position: relative;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.chart-canvas {
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+// Chart controls
+.chart-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 0 0 8px 8px;
+}
+
+.timeframe-selector select {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid #333;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+// Chart tools
+.chart-tools {
+  display: flex;
+  gap: 5px;
+}
+
+.tool-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid #333;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  &.active {
+    background-color: #2196f3;
+    border-color: #2196f3;
+  }
+}
+
+// Overlay toggles
+.overlays-toggle {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.checkbox-label {
+  color: #fff;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+// App component styles
+.sidenav-container {
+  height: 100%;
+}
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.toolbar-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  
+  &.connected {
+    background-color: #4caf50;
+  }
+  
+  &.disconnected {
+    background-color: #f44336;
+  }
+}
+
+.status-text {
+  color: #fff;
+  font-size: 12px;
+}
+
+.menu-button,
+.logout-button {
+  background-color: transparent;
+  border: none;
+  color: #fff;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+// Material Design customizations
+.mat-toolbar {
+  background: linear-gradient(135deg, #2196f3 0%, #37474f 100%);
+}
+
+.mat-sidenav {
+  background-color: #263238;
+  
+  .mat-nav-list {
+    .mat-list-item {
+      color: #fff;
+      
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+      
+      &.mat-list-item-active {
+        background-color: #2196f3;
+      }
+    }
+  }
+}
+
+.mat-card {
+  background-color: #424242;
+  color: #fff;
+  
+  .mat-card-title {
+    font-size: 16px;
+    font-weight: 500;
+  }
+  
+  .mat-card-content {
+    font-size: 14px;
+  }
+}
+
+.mat-button {
+  background-color: #2196f3;
+  
+  &:hover {
+    background-color: #1976d2;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .chart-container {
+    .chart-controls {
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .chart-tools {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  }
+}
+
+// Dark theme support
+[data-theme="dark"] {
+  .app-container {
+    background-color: #121212;
+  }
+  
+  .chart-container {
+    background-color: #1e1e1e;
+  }
+  
+  .toolbar {
+    background: linear-gradient(135deg, #424242 0%, #1e1e1e 100%);
+  }
+  
+  .mat-sidenav {
+    background-color: #1e1e1e;
+  }
+  
+  .mat-card {
+    background-color: #1e1e1e;
+  }
+  
+  .tool-btn {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: #333;
+  }
+}

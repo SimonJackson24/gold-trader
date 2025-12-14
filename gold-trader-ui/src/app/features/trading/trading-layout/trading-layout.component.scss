@@ -1,0 +1,101 @@
+/* Trading Layout Component Styles */
+.trading-layout-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.trading-tabs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tab-group {
+  border-bottom: 1px solid var(--border-color);
+  background: var(--background-card);
+}
+
+.tab-header {
+  display: flex;
+  padding: 0;
+}
+
+.tab-button {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.tab-button.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+.tab-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.chart-container {
+  height: 60%;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.trading-controls {
+  height: 40%;
+  display: flex;
+}
+
+.trading-module {
+  flex: 1;
+  overflow: hidden;
+  border-right: 1px solid var(--border-color);
+}
+
+.trading-module:last-child {
+  border-right: none;
+}
+
+@media (max-width: 1024px) {
+  .trading-controls {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .trading-module {
+    height: 200px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .trading-module:last-child {
+    border-bottom: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .trading-layout-container {
+    flex-direction: column;
+  }
+
+  .chart-container {
+    height: 40vh;
+  }
+
+  .trading-controls {
+    height: auto;
+    flex-direction: column;
+  }
+
+  .trading-module {
+    height: 250px;
+  }
+}

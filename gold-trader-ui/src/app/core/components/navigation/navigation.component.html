@@ -1,0 +1,93 @@
+<div class="navigation-container" [class.collapsed]="!isExpanded" #navContainer>
+  <!-- Mobile toggle button -->
+  <button
+    class="mobile-toggle"
+    (click)="toggleNavigation()"
+    aria-label="Toggle navigation"
+    aria-expanded="{{isExpanded}}"
+    aria-controls="main-navigation">
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <!-- Navigation header -->
+  <div class="nav-header" *ngIf="isExpanded">
+    <div class="logo-container">
+      <img src="assets/images/logo.svg" alt="Gold Trader Logo" class="logo">
+      <span class="app-name">Gold Trader</span>
+    </div>
+  </div>
+
+  <!-- Navigation items -->
+  <nav id="main-navigation" class="nav-items" role="navigation" aria-label="Main navigation">
+    <ul class="nav-list" role="list">
+      <li *ngFor="let item of navItems" class="nav-item" role="listitem">
+        <!-- Parent item with no children -->
+        <a
+          *ngIf="!item.children && item.route"
+          [routerLink]="item.route"
+          class="nav-link"
+          [class.active]="isItemActive(item)"
+          [attr.aria-current]="isItemActive(item) ? 'page' : null"
+          [attr.aria-expanded]="isItemActive(item)"
+          [attr.aria-controls]="item.id + '-submenu'"
+          (click)="navigateTo(item, $event)"
+          role="link">
+          <mat-icon class="nav-icon">{{item.icon}}</mat-icon>
+          <span class="nav-label">{{item.label}}</span>
+        </a>
+
+        <!-- Parent item with children -->
+        <button
+          *ngIf="item.children"
+          class="nav-link has-children"
+          [class.active]="isItemActive(item)"
+          [attr.aria-expanded]="isItemActive(item)"
+          [attr.aria-controls]="item.id + '-submenu'"
+          (click)="toggleSubmenu(item, $event)"
+          role="button">
+          <mat-icon class="nav-icon">{{item.icon}}</mat-icon>
+          <span class="nav-label">{{item.label}}</span>
+          <mat-icon class="expand-icon" *ngIf="item.children">
+            {{isItemActive(item) ? 'expand_less' : 'expand_more'}}
+          </mat-icon>
+        </button>
+
+        <!-- Submenu -->
+        <ul
+          *ngIf="item.children && isItemActive(item)"
+          id="{{item.id}}-submenu"
+          class="submenu"
+          role="group"
+          [attr.aria-labelledby]="item.id">
+          <li *ngFor="let child of item.children" class="submenu-item" role="listitem">
+            <a
+              [routerLink]="child.route"
+              class="submenu-link"
+              [class.active]="isItemActive(child)"
+              [attr.aria-current]="isItemActive(child) ? 'page' : null"
+              (click)="navigateTo(child, $event)"
+              role="link">
+              <mat-icon class="submenu-icon">{{child.icon}}</mat-icon>
+              <span class="submenu-label">{{child.label}}</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- User section -->
+  <div class="user-section" *ngIf="isAuthenticated && isExpanded">
+    <div class="user-info">
+      <mat-icon>account_circle</mat-icon>
+      <span class="user-name">{{currentUsername}}</span>
+    </div>
+    <button
+      class="logout-btn"
+      (click)="logout()"
+      aria-label="Logout">
+      <mat-icon>logout</mat-icon>
+      <span>Logout</span>
+    </button>
+  </div>
+</div>

@@ -1,0 +1,258 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 280px;
+  overflow: hidden;
+}
+
+.navigation-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  transition: width 0.3s ease, margin 0.3s ease;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  &.collapsed {
+    width: 80px;
+
+    .nav-header {
+      display: none;
+    }
+
+    .nav-label,
+    .expand-icon,
+    .user-name {
+      display: none;
+    }
+
+    .nav-icon {
+      margin-right: 0;
+    }
+
+    .submenu {
+      display: none;
+    }
+
+    .logout-btn span {
+      display: none;
+    }
+  }
+}
+
+.mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  padding: 12px 16px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+
+  mat-icon {
+    font-size: 24px;
+  }
+}
+
+.nav-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #333333;
+
+  .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .logo {
+      width: 32px;
+      height: 32px;
+    }
+
+    .app-name {
+      font-size: 1.25rem;
+      font-weight: 500;
+    }
+  }
+}
+
+.nav-items {
+  flex: 1;
+  padding: 16px 0;
+
+  .nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    .nav-item {
+      position: relative;
+
+      .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        width: 100%;
+        text-decoration: none;
+        color: inherit;
+        transition: background-color 0.2s ease;
+        gap: 12px;
+        cursor: pointer;
+
+        &:hover {
+          background-color: #2a2a2a;
+        }
+
+        &.active {
+          background-color: #2a2a2a;
+          color: #0099ff;
+        }
+
+        .nav-icon {
+          font-size: 20px;
+        }
+
+        .nav-label {
+          flex: 1;
+          text-align: left;
+        }
+
+        .expand-icon {
+          font-size: 16px;
+          transition: transform 0.2s ease;
+        }
+
+        &.has-children {
+          justify-content: space-between;
+        }
+      }
+
+      .submenu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        background-color: #121212;
+
+        .submenu-item {
+          .submenu-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px 10px 40px;
+            width: 100%;
+            text-decoration: none;
+            color: inherit;
+            transition: background-color 0.2s ease;
+            gap: 12px;
+
+            &:hover {
+              background-color: #2a2a2a;
+            }
+
+            &.active {
+              color: #0099ff;
+            }
+
+            .submenu-icon {
+              font-size: 16px;
+            }
+
+            .submenu-label {
+              flex: 1;
+              text-align: left;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.user-section {
+  padding: 16px 20px;
+  border-top: 1px solid #333333;
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    mat-icon {
+      font-size: 20px;
+    }
+
+    .user-name {
+      font-weight: 500;
+    }
+  }
+
+  .logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    padding: 8px 12px;
+    background-color: #333333;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    gap: 8px;
+
+    &:hover {
+      background-color: #444444;
+    }
+
+    mat-icon {
+      font-size: 16px;
+    }
+
+    span {
+      font-size: 0.875rem;
+    }
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .navigation-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1000;
+    transform: translateX(-100%);
+
+    &.expanded {
+      transform: translateX(0);
+    }
+  }
+
+  .mobile-toggle {
+    display: flex;
+  }
+}
+
+/* Animation for smooth transitions */
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}

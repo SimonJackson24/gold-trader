@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkgold_trader_ui=self.webpackChunkgold_trader_ui||[]).push([[531],{4531:(d,n,t)=>{t.r(n),t.d(n,{analyticsRoutes:()=>a});const a=[{path:"",loadChildren:()=>t.e(462).then(t.bind(t,5462)).then(s=>s.AnalyticsComponent),data:{title:"Analytics",description:"Trading performance analytics and reports"}}]}}]);

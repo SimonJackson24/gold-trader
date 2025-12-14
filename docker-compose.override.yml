@@ -1,0 +1,88 @@
+# Docker Compose override for development
+
+version: '3.8'
+
+services:
+  # Development configuration for trading app
+  trading_app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/app
+      - ./logs:/app/logs
+      - ./data:/app/data
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - RELOAD=true
+    command: python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"  # REST API
+      - "8001:8001"  # WebSocket
+      - "5678:5678"  # Debug port
+
+  # Development database with persistent data
+  postgres:
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./init-dev.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # Redis with persistence
+  redis:
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+
+  # Development tools
+  adminer:
+    image: adminer:latest
+    container_name: gold_trader_adminer
+    ports:
+      - "8080:8080"
+    networks:
+      - gold_trader_network
+    depends_on:
+      - postgres
+    profiles:
+      - tools
+
+  # Redis Commander
+  redis_commander:
+    image: rediscommander/redis-commander:latest
+    container_name: gold_trader_redis_commander
+    environment:
+      - REDIS_HOSTS=local:redis:6379:0:${REDIS_PASSWORD:-redis123}
+    ports:
+      - "8081:8081"
+    networks:
+      - gold_trader_network
+    depends_on:
+      - redis
+    profiles:
+      - tools
+
+  # Mailhog for email testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: gold_trader_mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - gold_trader_network
+    profiles:
+      - tools
+
+volumes:
+  postgres_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local
+
+networks:
+  gold_trader_network:
+    external: true

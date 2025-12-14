@@ -1,0 +1,96 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Documentation
+docs/_build/
+*.md
+!README.md
+
+# Logs
+logs/
+*.log
+
+# Data files
+data/
+*.csv
+*.json
+!package.json
+!requirements.txt
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+ssl/
+
+# Development files
+.dockerignore
+docker-compose.override.yml
+Dockerfile.dev
+requirements-dev.txt
+
+# Monitoring and logging
+monitoring/
+logging/
+
+# Alembic
+alembic/versions/*.py
+!alembic/versions/__init__.py
+
+# Node modules (if any)
+node_modules/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
