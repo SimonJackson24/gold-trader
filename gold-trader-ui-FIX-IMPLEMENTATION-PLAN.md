@@ -1,250 +1,99 @@
 # Gold Trader UI - Fix Implementation Plan
 
-## Executive Summary
-This document outlines the comprehensive fix strategy for resolving 221+ critical errors in the Gold Trader UI Angular application. The plan addresses dependency conflicts, missing components, TypeScript compilation failures, and architectural violations.
+This plan outlines the steps to address the issues identified in the "Gold Trader UI - Comprehensive Analysis Report." The fixes are prioritized and grouped for efficient implementation.
 
-## Current Status
-- **Total Issues**: 221+ critical errors
-- **Build Status**: ❌ COMPLETE FAILURE
-- **Compilation Status**: ❌ 221+ ERRORS
-- **Runtime Status**: ❌ UNUSABLE
+## Phase 1: Critical Fixes & Stability Improvements (High-Priority Issues)
 
-## Implementation Strategy
+These fixes are essential for the application's stability and correct functioning.
 
-### Phase 1: Foundation Fixes (Critical Build Blockers)
+### 1. Refactor Token Refresh Logic in AuthService
 
-#### Task 1: Upgrade Angular framework from v17 to v20
-**Priority**: CRITICAL
-**Files to Modify**: [`package.json`](gold-trader-ui/package.json:17-26)
-**Details**:
-- Update @angular/core from ^17.0.0 to ^20.0.0
-- Update @angular/common, @angular/compiler, @angular/platform-browser, etc.
-- Update @angular/cli and @angular-devkit/build-angular to v20 compatible versions
-- Update TypeScript from ~5.2.0 to ~5.6.0 (Angular 20 requirement)
+- **Objective:** Consolidate and correct the token refresh mechanism to ensure reliable session management.
+- **Steps:**
+    1.  Remove the `setupTokenRefresh()` method entirely.
+    2.  Modify `scheduleTokenRefresh()` to be the sole mechanism for scheduling token refreshes, ensuring it correctly calculates the refresh time before expiration.
+    3.  Ensure `scheduleTokenRefresh()` is called after successful login and after a successful token refresh.
+    4.  Update the `initializeAuthFromStorage()` method to gracefully handle an expired token by initiating a refresh and waiting for its completion before signaling `AuthStatus.Authenticated` to prevent race conditions during app startup.
+    5.  Ensure proper cleanup of `refreshTimer` and `refreshSubscription` on logout and component destruction.
 
-#### Task 2: Update all Angular dependencies to v20 compatible versions
-**Priority**: CRITICAL
-**Files to Modify**: [`package.json`](gold-trader-ui/package.json:27-35)
-**Details**:
-- Update @angular/cdk and @angular/material to v20
-- Update @angular/animations to v20
-- Update RxJS to ~8.0.0 (Angular 20 compatible)
-- Update zone.js to ~0.15.0
-- Update tslib to ^2.6.0
+### 2. Refactor WebSocket Reconnection Logic
 
-#### Task 3: Clean node_modules and reinstall dependencies
-**Priority**: CRITICAL
-**Commands**:
-```bash
-cd gold-trader-ui
-rm -rf node_modules package-lock.json
-npm install
-```
+- **Objective:** Simplify and centralize the WebSocket reconnection logic using RxJS operators for robustness.
+- **Steps:**
+    1.  Remove the manual reconnection logic from the `handleClose()` method.
+    2.  Configure the `retry` operator in `setupMessageHandling()` to manage all reconnection attempts, including delays and maximum attempts, using `environment.wsReconnectInterval` and `environment.wsMaxReconnectAttempts`.
+    3.  Ensure `createWebSocket()` returns a `WebSocketSubject` or throws an error, rather than returning `any`.
+    4.  Implement a more granular connection status (`CONNECTING`, `CONNECTED`, `RECONNECTING`, `DISCONNECTED`) using a `BehaviorSubject` to provide better UI feedback.
 
-### Phase 2: Core Service Fixes
+### 3. Update UI to Reflect True Connection Status
 
-#### Task 4: Fix WebSocket service duplicate observable declarations
-**Priority**: HIGH
-**File**: [`websocket.service.ts`](gold-trader-ui/src/app/core/services/websocket.service.ts:41-46)
-**Issue**: Duplicate public observable declarations conflict with private ones
-**Fix**: Remove duplicate public declarations (lines 41-46), keep only private declarations (lines 34-38)
+- **Objective:** Display the actual WebSocket connection status in the `AppComponent`'s toolbar.
+- **Steps:**
+    1.  Inject `WebSocketService` into `AppComponent`.
+    2.  Subscribe to the `WebSocketService`'s connection status observable.
+    3.  Update the `AppComponent`'s template to dynamically display the connection status (e.g., "Connected", "Connecting...", "Disconnected") based on the service's observable.
 
-#### Task 5: Export AuthStatus enum from auth.models.ts
-**Priority**: HIGH
-**File**: [`auth.models.ts`](gold-trader-ui/src/app/core/models/auth.models.ts:55-62)
-**Issue**: AuthStatus used in guards but not exported from service
-**Fix**: Add explicit export in [`auth.service.ts`](gold-trader-ui/src/app/core/services/auth.service.ts:230)
+## Phase 2: Best Practices & Code Modernization (Medium-Priority Issues)
 
-### Phase 3: Missing Component Creation
+These fixes improve code quality, maintainability, and align with modern Angular practices.
 
-#### Task 6: Create missing LoginComponent with form validation
-**Priority**: CRITICAL
-**Path**: [`src/app/features/auth/login/login.component.ts`](gold-trader-ui/src/app/features/auth/login/login.component.ts)
-**Requirements**:
-- Angular Material form components
-- Form validation with reactive forms
-- Authentication service integration
-- Responsive design
+### 1. Migrate from TSLint to ESLint
 
-#### Task 7: Create missing RegisterComponent with form validation
-**Priority**: CRITICAL
-**Path**: [`src/app/features/auth/register/register.component.ts`](gold-trader-ui/src/app/features/auth/register/register.component.ts)
-**Requirements**:
-- Registration form with password confirmation
-- Email validation
-- Terms and conditions checkbox
-- Error handling
+- **Objective:** Update the project's linting configuration to use ESLint, the current standard for Angular.
+- **Steps:**
+    1.  Install `@angular-eslint/schematics` and other necessary ESLint packages.
+    2.  Run the Angular ESLint migration schematic (`ng add @angular-eslint/schematics`).
+    3.  Review and adjust generated ESLint configuration files (`.eslintrc.json`) as needed.
+    4.  Remove TSLint-related dependencies and configurations from `package.json` and `angular.json`.
 
-#### Task 8: Create missing AnalyticsComponent
-**Priority**: HIGH
-**Path**: [`src/app/features/analytics/analytics.component.ts`](gold-trader-ui/src/app/features/analytics/analytics.component.ts)
-**Requirements**:
-- Chart.js integration for trading analytics
-- Performance metrics display
-- Date range selectors
-- Data export functionality
+### 2. Refactor Navigation Component to Use `routerLinkActive`
 
-#### Task 9: Create missing SettingsComponent
-**Priority**: HIGH
-**Path**: [`src/app/features/settings/settings.component.ts`](gold-trader-ui/src/app/features/settings/settings.component.ts)
-**Requirements**:
-- User preferences management
-- Trading configuration options
-- Notification settings
-- Theme selection
+- **Objective:** Simplify the `NavigationComponent`'s active link detection.
+- **Steps:**
+    1.  Remove manual active state tracking properties and methods (`isItemActive`, `setActiveItem`, `hasActiveChildren`, `navigateTo`) from `navigation.component.ts`.
+    2.  Update `navigation.component.html` to use `routerLink` and `routerLinkActive="active"` with `[routerLinkActiveOptions]="{exact: true}"` for all navigation links.
+    3.  Adjust `toggleSubmenu` logic if necessary to integrate cleanly with `routerLink`.
 
-#### Task 10: Create missing SignalsComponent
-**Priority**: HIGH
-**Path**: [`src/app/features/signals/signals.component.ts`](gold-trader-ui/src/app/features/signals/signals.component.ts)
-**Requirements**:
-- Real-time signal display
-- Signal filtering and sorting
-- Signal history
-- WebSocket integration for live updates
+### 3. Modernize Angular Material Imports
 
-#### Task 11: Create missing TradingComponent
-**Priority**: HIGH
-**Path**: [`src/app/features/trading/trading.component.ts`](gold-trader-ui/src/app/features/trading/trading.component.ts)
-**Requirements**:
-- Trading interface with buy/sell controls
-- Position management
-- Risk management tools
-- Real-time price updates
+- **Objective:** Replace the `MaterialModule` with direct imports of standalone Material components.
+- **Steps:**
+    1.  Identify all Angular Material components used within `MaterialModule`.
+    2.  For each component that imports `MaterialModule`, import the specific standalone Material components it needs directly into its `imports` array.
+    3.  Once no components are importing `MaterialModule`, delete `src/app/shared/material.module.ts`. This can be done incrementally or as a single large refactoring.
 
-### Phase 4: Configuration and Type Fixes
+### 4. Update Outdated NPM Dependencies
 
-#### Task 12: Add missing FormsModule imports to feature modules
-**Priority**: MEDIUM
-**Files**: All feature modules using forms
-**Details**:
-- Add FormsModule and ReactiveFormsModule imports
-- Ensure proper form validation setup
+- **Objective:** Bring project dependencies up to date.
+- **Steps:**
+    1.  Run `npm outdated` to get a list of all outdated packages.
+    2.  Carefully update major version dependencies (e.g., `date-fns` v2 to v3), reviewing their changelogs for breaking changes and adapting the code as necessary.
+    3.  Update minor and patch version dependencies.
+    4.  Test the application thoroughly after each significant dependency update.
 
-#### Task 13: Fix TypeScript type annotations in service files
-**Priority**: HIGH
-**Files**: Multiple service files
-**Details**:
-- Add missing type annotations for parameters
-- Fix implicit 'any' type errors
-- Ensure proper return type declarations
+## Phase 3: Code Cleanliness & Minor Improvements (Low-Priority Issues)
 
-#### Task 14: Verify tsconfig.json path configuration
-**Priority**: MEDIUM
-**File**: [`tsconfig.json`](gold-trader-ui/tsconfig.json:25-32)
-**Details**:
-- Verify path aliases are correctly configured
-- Ensure baseUrl is set to "./"
-- Check all path mappings
+These improvements enhance the overall quality and readability of the codebase.
 
-#### Task 15: Fix environment import paths in components
-**Priority**: MEDIUM
-**Files**: Components using @env/environment imports
-**Details**:
-- Replace @env/environment with relative paths where needed
-- Ensure environment variables are accessible
+### 1. Remove Unused Navigation Module
 
-### Phase 5: Testing and Validation
+- **Objective:** Delete dead code.
+- **Steps:**
+    1.  Delete `src/app/core/components/navigation/navigation.module.ts`.
 
-#### Task 16: Test compilation and build process
-**Priority**: CRITICAL
-**Commands**:
-```bash
-cd gold-trader-ui
-npm run build
-```
-**Expected**: Zero compilation errors
+### 2. Standardize Timer Implementation in AuthService
 
-#### Task 17: Run unit tests to verify fixes
-**Priority**: HIGH
-**Commands**:
-```bash
-cd gold-trader-ui
-npm test
-```
-**Expected**: All tests pass
+- **Objective:** Use a consistent approach for scheduling in `AuthService`.
+- **Steps:**
+    1.  Replace `setTimeout` with RxJS `timer` where appropriate in the token refresh logic (after refactoring token refresh in Phase 1).
 
-#### Task 18: Verify application starts successfully
-**Priority**: CRITICAL
-**Commands**:
-```bash
-cd gold-trader-ui
-ng serve
-```
-**Expected**: Application starts without errors, all routes accessible
+### 3. Simplify `sendMessage` in WebSocketService
 
-## Implementation Workflow
+- **Objective:** Remove unnecessary Observable wrapper.
+- **Steps:**
+    1.  Modify the `sendMessage` method to return `void` or a simpler boolean/status indicator, removing the `new Observable` wrapper.
+    2.  Ensure consumers of `sendMessage` adapt to the new return type.
 
-```mermaid
-graph TD
-    A[Angular v20 Upgrade] --> B[Dependency Updates]
-    B --> C[Clean Install]
-    C --> D[Fix WebSocket Service]
-    D --> E[Export AuthStatus]
-    E --> F[Create Missing Components]
-    F --> G[Add FormsModule Imports]
-    G --> H[Fix TypeScript Types]
-    H --> I[Verify Configuration]
-    I --> J[Testing & Validation]
-```
+## Next Steps
 
-## Risk Mitigation
-
-### Backup Strategy
-- Create git commit before major changes
-- Each task can be independently rolled back
-- Incremental testing after each phase
-
-### Testing Points
-- Build verification after dependency updates
-- Component testing after creation
-- Integration testing after all fixes
-
-### Rollback Plan
-- Git revert for major changes
-- Package.json version rollback if needed
-- Component removal if issues arise
-
-## Expected Outcomes
-
-After completing all 18 tasks:
-- ✅ Zero compilation errors (currently 221+)
-- ✅ All missing components created and functional
-- ✅ Proper dependency resolution
-- ✅ Clean build process
-- ✅ Functional development server
-- ✅ Modern Angular v20 framework with latest features
-- ✅ Enhanced performance and developer experience
-
-## Progress Tracking
-
-This document will be updated as tasks are completed:
-- [ ] Task 1: Upgrade Angular framework from v17 to v20
-- [ ] Task 2: Update all Angular dependencies to v20 compatible versions
-- [ ] Task 3: Clean node_modules and reinstall dependencies
-- [ ] Task 4: Fix WebSocket service duplicate observable declarations
-- [ ] Task 5: Export AuthStatus enum from auth.models.ts
-- [ ] Task 6: Create missing LoginComponent with form validation
-- [ ] Task 7: Create missing RegisterComponent with form validation
-- [ ] Task 8: Create missing AnalyticsComponent
-- [ ] Task 9: Create missing SettingsComponent
-- [ ] Task 10: Create missing SignalsComponent
-- [ ] Task 11: Create missing TradingComponent
-- [ ] Task 12: Add missing FormsModule imports to feature modules
-- [ ] Task 13: Fix TypeScript type annotations in service files
-- [ ] Task 14: Verify tsconfig.json path configuration
-- [ ] Task 15: Fix environment import paths in components
-- [ ] Task 16: Test compilation and build process
-- [ ] Task 17: Run unit tests to verify fixes
-- [ ] Task 18: Verify application starts successfully
-
-## Notes
-
-- This plan addresses every critical issue identified in the error report
-- All changes follow Angular best practices and maintain code quality standards
-- The plan is designed to be executed systematically with verification points
-- Each task is independent and can be completed in isolation if needed
-
----
-**Last Updated**: 2025-12-06
-**Total Tasks**: 18
-**Estimated Completion Time**: 8-12 hours
+After approval of this plan, I will proceed with implementing the fixes in the order outlined above, starting with Phase 1. Each change will be accompanied by appropriate testing to ensure stability and correctness.
