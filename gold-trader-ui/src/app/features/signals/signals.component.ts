@@ -1,44 +1,70 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+// Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
-import { MaterialModule } from '../../shared/material.module';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSortModule } from '@angular/material/sort';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
-import { Subject, takeUntil } from 'rxjs';
-import { MatTableDataSource } from '@angular/material/table';
+import { Subject } from 'rxjs';
 
-import { WebSocketService } from '@core/services/websocket.service';
+import { WebSocketService, ConnectionStatus } from '@core/services/websocket.service';
 import { TradingSignal } from '@core/models/trading.models';
-
-interface SignalFilter {
-  status: string;
-  direction: string;
-  instrument: string;
-  timeRange: string;
-  minConfidence: number;
-}
 
 @Component({
   selector: 'app-signals',
   standalone: true,
   imports: [
     CommonModule,
-    MaterialModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    DatePipe,
+    DecimalPipe,
+    MatSnackBarModule,
+    MatCardModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatTabsModule,
+    MatChipsModule,
+    MatProgressBarModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatProgressSpinnerModule,
+    MatSortModule,
+    MatTooltipModule
   ],
   template: `
     <div class="signals-container">
       <div class="signals-header">
         <h1 class="page-title">Trading Signals</h1>
         <p class="page-subtitle">Real-time trading signals and alerts</p>
-        <div class="connection-status">
-          <mat-icon [class.connected]="isConnected" [class.disconnected]="!isConnected">
-            {{ isConnected ? 'wifi' : 'wifi_off' }}
+        <div class="connection-status" *ngIf="connectionStatus$ | async as status">
+          <mat-icon [ngClass]="{
+            'connected': status === ConnectionStatus.Connected,
+            'reconnecting': status === ConnectionStatus.Reconnecting,
+            'disconnected': status === ConnectionStatus.Disconnected
+          }">
+            {{ status === 'Connected' ? 'wifi' : 'wifi_off' }}
           </mat-icon>
-          <span class="status-text">{{ isConnected ? 'Connected' : 'Disconnected' }}</span>
+          <span class="status-text">{{ status }}</span>
         </div>
       </div>
 
@@ -333,6 +359,10 @@ interface SignalFilter {
 
     .connection-status .connected {
       color: #4caf50;
+    }
+    
+    .connection-status .reconnecting {
+      color: #ff9800;
     }
 
     .connection-status .disconnected {
@@ -630,11 +660,11 @@ export class SignalsComponent implements OnInit, OnDestroy {
   displayedSignalColumns: string[] = ['instrument', 'direction', 'entry_price', 'status', 'created_at', 'actions'];
   
   signalPageSize = 25;
-  currentSignalPage = 0;
-  totalSignals = 0;
-  
-  isLoading = false;
-  isConnected = false;
+  private fb = inject(FormBuilder);
+  private webSocketService = inject(WebSocketService);
+  private snackBar = inject(MatSnackBar);
+
+  private destroy$ = new Subject<void>();
   
   signalStats = {
     total: 0,
@@ -642,14 +672,15 @@ export class SignalsComponent implements OnInit, OnDestroy {
     completed: 0,
     winRate: 0
   };
-  
-  private destroy$ = new Subject<void>();
 
-  constructor(
-    private fb: FormBuilder,
-    private webSocketService: WebSocketService,
-    private snackBar: MatSnackBar
-  ) {
+  currentSignalPage = 0;
+  totalSignals = 0;
+  
+  isLoading = false;
+  connectionStatus$ = this.webSocketService.connectionStatus$;
+  ConnectionStatus = ConnectionStatus;
+
+  constructor() {
     this.filterForm = this.fb.group({
       status: [''],
       direction: [''],
@@ -661,7 +692,7 @@ export class SignalsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadSignals();
-    this.setupWebSocketSubscriptions();
+    // WebSocket signals are now handled by the service
   }
 
   ngOnDestroy(): void {
@@ -677,17 +708,6 @@ export class SignalsComponent implements OnInit, OnDestroy {
       this.generateMockSignals();
       this.isLoading = false;
     }, 1500);
-  }
-
-  setupWebSocketSubscriptions(): void {
-    // Note: WebSocketService observables are private, this is a placeholder
-    // In a real implementation, you would subscribe to real-time signals
-    this.isConnected = true;
-    
-    // Simulate connection status changes
-    setInterval(() => {
-      this.isConnected = Math.random() > 0.1; // 90% uptime simulation
-    }, 30000);
   }
 
   applyFilters(): void {

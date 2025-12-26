@@ -1,5 +1,7 @@
+// Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ViewChild, inject } from '@angular/core';
 import { Observable, Subject, combineLatest } from 'rxjs';
 import { takeUntil, tap, switchMap, map } from 'rxjs/operators';
 import { MarketDataService } from '../../../core/services/market-data.service';
@@ -80,6 +82,7 @@ export class ChartsComponent implements OnInit, OnDestroy {
   @ViewChild('chart') chart!: PtChartComponent;
 
   private destroy$ = new Subject<void>();
+  private marketDataService = inject(MarketDataService);
 
   // Chart data
   candles: ChartData[] = [];
@@ -97,7 +100,7 @@ export class ChartsComponent implements OnInit, OnDestroy {
     Timeframe.H1, Timeframe.H4, Timeframe.D1
   ];
 
-  constructor(private marketDataService: MarketDataService) {
+  constructor() {
     this.chartConfig = this.marketDataService.getDefaultChartConfig();
   }
 

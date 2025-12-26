@@ -1,3 +1,5 @@
+// Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 import { bootstrapApplication } from '@angular/platform-browser';
 import { enableProdMode } from '@angular/core';
 import { provideRouter } from '@angular/router';

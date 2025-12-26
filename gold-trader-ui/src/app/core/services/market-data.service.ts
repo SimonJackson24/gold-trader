@@ -1,6 +1,8 @@
+// Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, Subject, of } from 'rxjs';
-import { map, tap, shareReplay } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { ChartData, Timeframe, ChartConfig, ChartOverlay, TechnicalIndicator, PriceTick } from '../models/trading.models';
 
 @Injectable({
@@ -40,7 +42,7 @@ export class MarketDataService {
 
   getSmartMoneyAnalysis(symbol: string, timeframe: Timeframe): Observable<any> {
     return of({}).pipe(
-      tap(analysis => console.log(`Loaded Smart Money analysis for ${symbol} ${timeframe}`))
+      tap(() => console.log(`Loaded Smart Money analysis for ${symbol} ${timeframe}`))
     );
   }
 

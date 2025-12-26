@@ -1,3 +1,5 @@
+// Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 import { Component, OnInit, ChangeDetectionStrategy, ViewChild } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';

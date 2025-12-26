@@ -1,3 +1,5 @@
+// Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 export const environment = {
   production: true,
   apiUrl: 'https://api.yourdomain.com/api/v1',

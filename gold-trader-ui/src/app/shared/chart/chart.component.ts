@@ -1,6 +1,8 @@
+// Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 import { Component, Input, OnChanges, SimpleChanges, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '../material.module';
+import { MatCardModule } from '@angular/material/card';
 import { Chart, ChartConfiguration, ChartType, ChartData, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 
@@ -23,7 +25,7 @@ export type { ChartData };
 @Component({
   selector: 'app-chart',
   standalone: true,
-  imports: [CommonModule, MaterialModule, BaseChartDirective],
+  imports: [CommonModule, MatCardModule, BaseChartDirective],
   template: `
     <div class="chart-container">
       <mat-card class="chart-card">

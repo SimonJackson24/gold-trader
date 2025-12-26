@@ -1,0 +1,32 @@
+# Logs
+logs
+*.log
+backend.log
+backend_err.log
+frontend.log
+frontend_err.log
+
+# Node modules
+node_modules/
+
+# Angular cache
+.angular/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+dist/
+build/

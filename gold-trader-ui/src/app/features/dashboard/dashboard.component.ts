@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+// Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
 import { Observable, Subject, of } from 'rxjs';
 import { takeUntil, catchError, map } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { CurrencyPipe, PercentPipe } from '@angular/common';
-
-import { MaterialModule } from '../../shared/material.module';
+import { MatCardModule } from '@angular/material/card';
 
 import { AccountInfo, TradingSignal, PerformanceMetrics, SignalResponse, PerformanceResponse } from '@core/models/trading.models';
 import { ApiService } from '@core/services/api.service';
@@ -14,7 +15,7 @@ import { ApiService } from '@core/services/api.service';
   standalone: true,
   imports: [
     CommonModule,
-    MaterialModule,
+    MatCardModule,
     CurrencyPipe,
     PercentPipe
   ],
@@ -102,14 +103,11 @@ import { ApiService } from '@core/services/api.service';
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  private apiService = inject(ApiService);
 
   accountInfo$!: Observable<AccountInfo>;
   recentSignals$!: Observable<TradingSignal[]>;
   performanceMetrics$!: Observable<PerformanceMetrics>;
-
-  constructor(
-    private apiService: ApiService
-  ) {}
 
   ngOnInit(): void {
     this.loadDashboardData();

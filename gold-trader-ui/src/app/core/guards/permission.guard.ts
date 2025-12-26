@@ -1,4 +1,6 @@
-import { Injectable } from '@angular/core';
+// Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
+import { Injectable, inject } from '@angular/core';
 import { CanActivate, Router, RouterStateSnapshot, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
@@ -10,11 +12,9 @@ import { Permission } from '../models/auth.models';
   providedIn: 'root'
 })
 export class PermissionGuard implements CanActivate {
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
-  
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot

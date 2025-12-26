@@ -1,3 +1,5 @@
+// Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 export interface LoginCredentials {
   username: string;
   password: string;

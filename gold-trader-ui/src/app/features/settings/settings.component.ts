@@ -1,10 +1,19 @@
-import { Component, OnInit } from '@angular/core';
+// Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-import { MaterialModule } from '../../shared/material.module';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { AuthService } from '@core/services/auth.service';
 
@@ -37,9 +46,17 @@ interface UserSettings {
   standalone: true,
   imports: [
     CommonModule,
-    MaterialModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    MatCardModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatSlideToggleModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    MatSnackBarModule
   ],
   template: `
     <div class="settings-container">
@@ -361,11 +378,11 @@ export class SettingsComponent implements OnInit {
   settingsForm: FormGroup;
   isSaving = false;
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private snackBar: MatSnackBar
-  ) {
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private snackBar = inject(MatSnackBar);
+
+  constructor() {
     this.settingsForm = this.fb.group({
       // Profile Settings
       displayName: [''],

@@ -1,3 +1,5 @@
+// Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:8000',

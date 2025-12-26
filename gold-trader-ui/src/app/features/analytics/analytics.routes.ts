@@ -1,3 +1,5 @@
+// Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 import { Routes } from '@angular/router';
 import { AnalyticsComponent } from './analytics.component';
 

@@ -1,4 +1,6 @@
-import { Component, OnInit, ChangeDetectionStrategy, HostListener, ViewChildren, QueryList, ElementRef } from '@angular/core';
+// Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
+import { Component, OnInit, ChangeDetectionStrategy, HostListener, ViewChildren, QueryList, ElementRef, inject } from '@angular/core';
 import { CommonModule, AsyncPipe } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
@@ -109,6 +111,8 @@ export class OrderManagementComponent implements OnInit {
   @ViewChildren('submitButton') submitButtons: QueryList<ElementRef> = new QueryList<ElementRef>();
   @ViewChildren('cancelButtons') cancelButtons: QueryList<ElementRef> = new QueryList<ElementRef>();
 
+  private fb = inject(FormBuilder);
+
   formFields: Array<{
     name: string;
     label: string;
@@ -158,7 +162,7 @@ export class OrderManagementComponent implements OnInit {
     }
   ];
 
-  constructor(private fb: FormBuilder) {}
+  constructor() {}
 
   ngOnInit(): void {
     this.orderForm = this.fb.group({

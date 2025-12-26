@@ -1,14 +1,27 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+// Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSortModule } from '@angular/material/sort';
 
-import { MaterialModule } from '../../shared/material.module';
 import { ChartComponent } from '../../shared/chart/chart.component';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Subject, takeUntil } from 'rxjs';
-import { MatTableDataSource } from '@angular/material/table';
 import { ApiService } from '@core/services/api.service';
 import { ChartData } from '../../shared/chart/chart.component';
 import { Chart, registerables } from 'chart.js';
@@ -47,10 +60,24 @@ interface DailyPerformance {
   standalone: true,
   imports: [
     CommonModule,
-    MaterialModule,
     ReactiveFormsModule,
     FormsModule,
-    ChartComponent
+    ChartComponent,
+    DatePipe,
+    MatSnackBarModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTabsModule,
+    MatProgressBarModule,
+    MatTableModule,
+    MatProgressSpinnerModule,
+    MatSortModule
   ],
   template: `
     <div class="analytics-container">
@@ -451,11 +478,11 @@ export class AnalyticsComponent implements OnInit, OnDestroy {
   
   private destroy$ = new Subject<void>();
 
-  constructor(
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar,
-    private apiService: ApiService
-  ) {
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+  private apiService = inject(ApiService);
+
+  constructor() {
     this.filterForm = this.fb.group({
       startDate: [new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)], // 30 days ago
       endDate: [new Date()],

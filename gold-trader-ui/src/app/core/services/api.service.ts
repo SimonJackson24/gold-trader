@@ -1,6 +1,8 @@
-import { Injectable } from '@angular/core';
+// Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
+import { Injectable, inject, OnDestroy } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, throwError, Subject, timer } from 'rxjs';
+import { Observable, throwError, Subject } from 'rxjs';
 import { catchError, map, timeout, retryWhen, delay, takeUntil, tap } from 'rxjs/operators';
 
 import { environment } from '../../../environments/environment';
@@ -13,15 +15,13 @@ import {
   Position,
   PerformanceMetrics,
   SignalQueryParams,
-  TradeQueryParams,
-  PriceTick,
-  Candle
+  TradeQueryParams
 } from '@core/models/trading.models';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ApiService {
+export class ApiService implements OnDestroy {
   private readonly API_URL = environment.apiUrl;
   private readonly DEFAULT_TIMEOUT = 30000; // 30 seconds
   private readonly MAX_RETRIES = 3;
@@ -29,14 +29,14 @@ export class ApiService {
   private readonly RATE_LIMIT_WINDOW = 60000; // 1 minute
   private readonly MAX_REQUESTS_PER_WINDOW = 60;
 
+  private http = inject(HttpClient);
+  private authService = inject(AuthService);
+
   private requestCounts: {[key: string]: {count: number, timestamp: number}} = {};
   private rateLimitSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
   
-  constructor(
-    private http: HttpClient,
-    private authService: AuthService
-  ) {}
+  constructor() {}
   
   // Authentication endpoints
   login(credentials: any): Observable<any> {

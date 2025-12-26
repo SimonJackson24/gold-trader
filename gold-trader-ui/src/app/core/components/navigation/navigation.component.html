@@ -4,8 +4,7 @@
     class="mobile-toggle"
     (click)="toggleNavigation()"
     aria-label="Toggle navigation"
-    aria-expanded="{{isExpanded}}"
-    aria-controls="main-navigation">
+    [attr.aria-expanded]="isExpanded">
     <mat-icon>menu</mat-icon>
   </button>
 
@@ -20,53 +19,41 @@
   <!-- Navigation items -->
   <nav id="main-navigation" class="nav-items" role="navigation" aria-label="Main navigation">
     <ul class="nav-list" role="list">
-      <li *ngFor="let item of navItems" class="nav-item" role="listitem">
-        <!-- Parent item with no children -->
-        <a
-          *ngIf="!item.children && item.route"
-          [routerLink]="item.route"
-          class="nav-link"
-          [class.active]="isItemActive(item)"
-          [attr.aria-current]="isItemActive(item) ? 'page' : null"
-          [attr.aria-expanded]="isItemActive(item)"
-          [attr.aria-controls]="item.id + '-submenu'"
-          (click)="navigateTo(item, $event)"
-          role="link">
-          <mat-icon class="nav-icon">{{item.icon}}</mat-icon>
-          <span class="nav-label">{{item.label}}</span>
-        </a>
-
-        <!-- Parent item with children -->
-        <button
-          *ngIf="item.children"
-          class="nav-link has-children"
-          [class.active]="isItemActive(item)"
-          [attr.aria-expanded]="isItemActive(item)"
-          [attr.aria-controls]="item.id + '-submenu'"
-          (click)="toggleSubmenu(item, $event)"
-          role="button">
+      <li *ngFor="let item of navItems" 
+          class="nav-item" 
+          role="listitem"
+          routerLinkActive="active-parent"
+          [routerLinkActiveOptions]="{exact: false}">
+          
+        <!-- Link for item -->
+        <a [routerLink]="item.route"
+           [class.has-children]="!!item.children"
+           class="nav-link"
+           (click)="toggleSubmenu(item, $event)"
+           routerLinkActive="active"
+           [routerLinkActiveOptions]="{exact: !item.children}"
+           [attr.aria-current]="item.route && !item.children ? 'page' : null">
+          
           <mat-icon class="nav-icon">{{item.icon}}</mat-icon>
           <span class="nav-label">{{item.label}}</span>
           <mat-icon class="expand-icon" *ngIf="item.children">
-            {{isItemActive(item) ? 'expand_less' : 'expand_more'}}
+            {{ item.active ? 'expand_less' : 'expand_more' }}
           </mat-icon>
-        </button>
+        </a>
 
         <!-- Submenu -->
-        <ul
-          *ngIf="item.children && isItemActive(item)"
-          id="{{item.id}}-submenu"
-          class="submenu"
-          role="group"
-          [attr.aria-labelledby]="item.id">
+        <ul *ngIf="item.children && item.active"
+            class="submenu"
+            role="group"
+            [attr.aria-labelledby]="item.id">
+            
           <li *ngFor="let child of item.children" class="submenu-item" role="listitem">
-            <a
-              [routerLink]="child.route"
-              class="submenu-link"
-              [class.active]="isItemActive(child)"
-              [attr.aria-current]="isItemActive(child) ? 'page' : null"
-              (click)="navigateTo(child, $event)"
-              role="link">
+            <a [routerLink]="child.route"
+               class="submenu-link"
+               routerLinkActive="active"
+               [routerLinkActiveOptions]="{exact: true}"
+               [attr.aria-current]="'page'">
+              
               <mat-icon class="submenu-icon">{{child.icon}}</mat-icon>
               <span class="submenu-label">{{child.label}}</span>
             </a>
@@ -77,10 +64,10 @@
   </nav>
 
   <!-- User section -->
-  <div class="user-section" *ngIf="isAuthenticated && isExpanded">
-    <div class="user-info">
+  <div class="user-section" *ngIf="(isAuthenticated$ | async) && isExpanded">
+    <div class="user-info" *ngIf="currentUser$ | async as user">
       <mat-icon>account_circle</mat-icon>
-      <span class="user-name">{{currentUsername}}</span>
+      <span class="user-name">{{ user.username }}</span>
     </div>
     <button
       class="logout-btn"
