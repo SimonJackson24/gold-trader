@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 from ..logging_config import get_logger
-from ..database import get_database
+from ..database.connection import db
 from ..config import get_settings
 
 
@@ -210,20 +210,20 @@ class DatabaseHealthCheck:
     async def check(self) -> Dict[str, Any]:
         """Check database connectivity."""
         try:
-            db = get_database()
-            
             # Test connection
-            await db.execute("SELECT 1")
+            is_connected = await db.test_connection()
+            if not is_connected:
+                raise Exception("Connection test failed")
             
             # Get connection info
-            pool_info = await db.get_pool_info()
+            pool = db.get_async_engine().pool
             
             return {
                 'status': HealthStatus.HEALTHY.value,
                 'message': 'Database connection successful',
                 'details': {
-                    'pool_size': pool_info.get('size'),
-                    'active_connections': pool_info.get('active')
+                    'pool_size': pool.size(),
+                    'active_connections': pool.checkedout()
                 }
             }
             

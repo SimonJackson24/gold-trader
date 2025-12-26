@@ -51,6 +51,7 @@ class Settings(BaseSettings):
     # Logging settings
     log_level: str = Field(default="INFO", env="LOG_LEVEL")
     log_file: Optional[str] = Field(default=None, env="LOG_FILE")
+    json_logs: bool = Field(default=False, env="JSON_LOGS")
     log_format: str = Field(
         default="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         env="LOG_FORMAT"
@@ -72,11 +73,23 @@ class Settings(BaseSettings):
     metrics_port: int = Field(default=9090, env="METRICS_PORT")
     health_check_interval: int = Field(default=30, env="HEALTH_CHECK_INTERVAL")
     
+    # Database settings (moved here for direct loading)
+    db_host: str = Field(default="localhost", env="DB_HOST")
+    db_port: int = Field(default=5432, env="DB_PORT")
+    db_name: str = Field(default="xauusd_trading", env="DB_NAME")
+    db_user: str = Field(default="trader", env="DB_USER")
+    db_password: str = Field(default="password123", env="DB_PASSWORD")
+    db_pool_size: int = Field(default=20, env="DB_POOL_SIZE")
+    db_max_overflow: int = Field(default=30, env="DB_MAX_OVERFLOW")
+    db_pool_timeout: int = Field(default=30, env="DB_POOL_TIMEOUT")
+    db_pool_recycle: int = Field(default=3600, env="DB_POOL_RECYCLE")
+    db_ssl_mode: str = Field(default="prefer", env="DB_SSL_MODE")
+
     # Nested configurations
-    database: DatabaseConfig = Field(default_factory=DatabaseConfig)
-    trading: TradingConfig = Field(default_factory=TradingConfig)
-    smc: SMCConfig = Field(default_factory=SMCConfig)
-    telegram: TelegramConfig = Field(default_factory=TelegramConfig)
+    database: DatabaseConfig = Field(default_factory=lambda: DatabaseConfig())
+    trading: TradingConfig = Field(default_factory=lambda: TradingConfig())
+    smc: SMCConfig = Field(default_factory=lambda: SMCConfig())
+    telegram: TelegramConfig = Field(default_factory=lambda: TelegramConfig())
     
     class Config:
         env_file = ".env"
@@ -86,7 +99,9 @@ class Settings(BaseSettings):
     
     def get_database_url(self) -> str:
         """Get complete database URL."""
-        return self.database.get_url()
+        url = f"postgresql://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
+        # print(f"DEBUG: Generated DB URL: {url.replace(self.db_password, '***')}")
+        return url
     
     def get_redis_url(self) -> str:
         """Get Redis connection URL."""

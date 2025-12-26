@@ -6,9 +6,11 @@ and async database operations.
 """
 
 import asyncio
+import logging
+from datetime import datetime
 from typing import AsyncGenerator, Generator
 from contextlib import asynccontextmanager, contextmanager
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine, MetaData, text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
@@ -33,6 +35,7 @@ class Database:
     def __init__(self):
         """Initialize database connections."""
         self.settings = get_settings()
+        self.logger = logging.getLogger(__name__)
         self._sync_engine = None
         self._async_engine = None
         self._session_factory = None
@@ -41,46 +44,44 @@ class Database:
     def get_sync_engine(self):
         """Get synchronous SQLAlchemy engine."""
         if self._sync_engine is None:
-            engine_kwargs = self.settings.database.get_engine_kwargs()
-            engine_kwargs.update({
-                "poolclass": QueuePool,
-                "pool_pre_ping": True,
-                "echo": self.settings.debug
-            })
-            self._sync_engine = create_engine(**engine_kwargs)
+            self._sync_engine = create_engine(
+                self.settings.get_database_url(),
+                poolclass=QueuePool,
+                pool_pre_ping=True,
+                echo=self.settings.debug,
+                pool_size=self.settings.db_pool_size,
+                max_overflow=self.settings.db_max_overflow,
+                pool_timeout=self.settings.db_pool_timeout,
+                pool_recycle=self.settings.db_pool_recycle
+            )
         return self._sync_engine
     
     def get_async_engine(self):
         """Get asynchronous SQLAlchemy engine with secure connection pooling."""
         if self._async_engine is None:
-            db_url = self.settings.database.get_url()
+            db_url = self.settings.get_database_url()
             # Convert to async URL
             if db_url.startswith("postgresql://"):
                 async_url = db_url.replace("postgresql://", "postgresql+asyncpg://")
             else:
                 async_url = db_url
             
+            print(f"DEBUG: async_url={async_url.replace(self.settings.db_password, '***')}")
+            
             # Enhanced connection pool configuration for security and performance
             self._async_engine = create_async_engine(
                 async_url,
                 # Connection pool settings
-                pool_size=self.settings.database.pool_size,
-                max_overflow=self.settings.database.max_overflow,
-                pool_timeout=self.settings.database.pool_timeout,
-                pool_recycle=self.settings.database.pool_recycle,
+                pool_size=self.settings.db_pool_size,
+                max_overflow=self.settings.db_max_overflow,
+                pool_timeout=self.settings.db_pool_timeout,
+                pool_recycle=self.settings.db_pool_recycle,
                 pool_pre_ping=True,  # Validate connections before use
                 pool_reset_on_return='commit',  # Reset connection state
                 
                 # Security settings
                 connect_args={
-                    "sslmode": self.settings.database.ssl_mode,
-                    "sslcert": None,  # Disable client certs unless explicitly configured
-                    "sslkey": None,
-                    "sslrootcert": None,
-                    "application_name": "xauusd_trading_system",
-                    "connect_timeout": 10,
                     "command_timeout": 30,
-                    "statement_timeout": 60000,  # 60 seconds max query time
                 },
                 
                 # Query optimization
@@ -92,7 +93,7 @@ class Database:
                 isolation_level="READ_COMMITTED",  # Prevent dirty reads
             )
         return self._async_engine
-    
+
     def get_session_factory(self):
         """Get synchronous session factory."""
         if self._session_factory is None:
@@ -142,9 +143,9 @@ class Database:
         session = self.get_async_session_factory()()
         try:
             # Set session configuration for security
-            await session.execute(
-                "SET SESSION statement_timeout = '60s', lock_timeout = '30s', idle_in_transaction_session_timeout = '10min'"
-            )
+            await session.execute(text("SET SESSION statement_timeout = '60s'"))
+            await session.execute(text("SET SESSION lock_timeout = '30s'"))
+            await session.execute(text("SET SESSION idle_in_transaction_session_timeout = '10min'"))
             
             yield session
             await session.commit()
@@ -157,6 +158,16 @@ class Database:
         finally:
             await session.close()
     
+    async def connect(self):
+        """Connect to database and test connection."""
+        if not await self.test_connection():
+            raise RuntimeError("Failed to connect to database")
+        self.logger.info("Database connection established")
+
+    async def disconnect(self):
+        """Alias for close()."""
+        await self.close()
+
     async def close(self):
         """Close all database connections."""
         if self._async_engine:
@@ -188,7 +199,7 @@ class Database:
         """
         try:
             async with self.get_async_session() as session:
-                await session.execute("SELECT 1")
+                await session.execute(text("SELECT 1"))
             return True
         except Exception as e:
             print(f"Database connection test failed: {e}")
@@ -251,14 +262,14 @@ def get_database_info() -> dict:
     """
     settings = get_settings()
     return {
-        "url": settings.database.get_url().replace(settings.database.password, "***"),
-        "host": settings.database.host,
-        "port": settings.database.port,
-        "database": settings.database.database,
-        "username": settings.database.username,
-        "pool_size": settings.database.pool_size,
-        "max_overflow": settings.database.max_overflow,
-        "ssl_mode": settings.database.ssl_mode
+        "url": settings.get_database_url().replace(settings.db_password, "***"),
+        "host": settings.db_host,
+        "port": settings.db_port,
+        "database": settings.db_name,
+        "username": settings.db_user,
+        "pool_size": settings.db_pool_size,
+        "max_overflow": settings.db_max_overflow,
+        "ssl_mode": settings.db_ssl_mode
     }
 
 

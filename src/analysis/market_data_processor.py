@@ -337,17 +337,17 @@ class MarketDataProcessor:
         
         # Check M15 timeframe
         if (self.last_m15_update and 
-            current_time >= self.last_m15_update + timedelta(minutes=1))):
+            current_time >= self.last_m15_update + timedelta(minutes=1)):
             await self._trigger_smc_analysis("M15")
         
         # Check H1 timeframe
         if (self.last_h1_update and 
-            current_time >= self.last_h1_update + timedelta(hours=1))):
+            current_time >= self.last_h1_update + timedelta(hours=1)):
             await self._trigger_smc_analysis("H1")
         
         # Check H4 timeframe
         if (self.last_h4_update and 
-            current_time >= self.last_h4_update + timedelta(hours=4))):
+            current_time >= self.last_h4_update + timedelta(hours=4)):
             await self._trigger_smc_analysis("H4")
     
     async def _trigger_smc_analysis(self, timeframe: str):

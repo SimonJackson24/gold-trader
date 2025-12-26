@@ -7,7 +7,7 @@ through Telegram bot.
 
 import asyncio
 import logging
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Set, Callable
 from datetime import datetime
 from decimal import Decimal
 import aiohttp
@@ -15,7 +15,7 @@ import telegram
 from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
-from ..models.signal import Signal
+from ..models.signal import TradingSignal as Signal
 from ..models.trade import Trade
 from ..models.market_data import Tick
 from ..config import get_settings
@@ -48,6 +48,11 @@ class TelegramService:
     
     async def start(self):
         """Start Telegram bot service."""
+        if getattr(self.settings, 'dev_mock_telegram', False):
+            self.logger.info("Telegram bot service starting in MOCK mode")
+            self.is_running = True
+            return
+
         try:
             # Initialize bot
             self.bot = Bot(token=self.settings.telegram_bot_token)
@@ -328,6 +333,10 @@ Time: {signal.timestamp.strftime('%H:%M')}
     
     async def send_signal_notification(self, signal: Signal):
         """Send trading signal notification."""
+        if not self.bot:
+            self.logger.info(f"MOCK Signal Notification: {signal.signal_id}")
+            return
+
         message = self._format_signal_message(signal)
         
         # Send to subscribed users
@@ -344,6 +353,10 @@ Time: {signal.timestamp.strftime('%H:%M')}
     
     async def send_trade_notification(self, trade: Trade):
         """Send trade execution notification."""
+        if not self.bot:
+            self.logger.info(f"MOCK Trade Notification: {trade.trade_id}")
+            return
+
         message = self._format_trade_message(trade)
         
         # Send to subscribed users
@@ -360,6 +373,10 @@ Time: {signal.timestamp.strftime('%H:%M')}
     
     async def send_alert(self, title: str, message: str, level: str = "info"):
         """Send general alert notification."""
+        if not self.bot:
+            self.logger.info(f"MOCK Alert: {title} - {message}")
+            return
+
         alert_message = f"""
 🚨 *{title}*
 

@@ -6,7 +6,7 @@ and handles partial closes and stop loss management.
 """
 
 import asyncio
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Callable
 from datetime import datetime, timedelta
 from decimal import Decimal
 import logging
@@ -26,11 +26,14 @@ class TradeManager:
     opening, monitoring, and closing trades.
     """
     
-    def __init__(self):
+    def __init__(self, session=None):
         """Initialize trade manager."""
         self.settings = get_settings()
         self.logger = logging.getLogger(__name__)
-        self.trade_repo = TradeRepository()
+        self.trade_repo = TradeRepository(session) if session else None
+        
+        # Handlers
+        self.trade_handlers: List[Callable] = []
         
         # Thread-safe active trades
         self.active_trades = trade_locks  # Use resource manager for trades
@@ -43,6 +46,10 @@ class TradeManager:
         self._trade_lock = trade_locks
         self._trade_semaphore = trade_semaphore
     
+    def add_trade_handler(self, handler: Callable):
+        """Add handler for trade events."""
+        self.trade_handlers.append(handler)
+
     async def start(self):
         """Start trade management."""
         self.is_running = True
@@ -107,6 +114,16 @@ class TradeManager:
                     self.logger.info(
                         f"Trade opened: {db_trade.trade_id} for signal {signal.signal_id}"
                     )
+                    
+                    # Trigger handlers
+                    for handler in self.trade_handlers:
+                        try:
+                            if asyncio.iscoroutinefunction(handler):
+                                await handler(db_trade)
+                            else:
+                                handler(db_trade)
+                        except Exception as e:
+                            self.logger.error(f"Error in trade handler: {e}")
                     
                     return db_trade
                     

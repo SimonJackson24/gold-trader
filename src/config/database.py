@@ -7,7 +7,7 @@ connection pool configuration.
 
 from typing import Optional
 from pydantic import Field
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class DatabaseConfig(BaseSettings):
@@ -17,6 +17,7 @@ class DatabaseConfig(BaseSettings):
     Manages PostgreSQL connection parameters
     and connection pool settings.
     """
+    model_config = SettingsConfigDict(env_file='.env', env_prefix='DB_', extra='ignore')
     
     # Connection settings
     host: str = Field(default="localhost", env="DB_HOST")
@@ -44,9 +45,6 @@ class DatabaseConfig(BaseSettings):
     # Migration settings
     auto_migrate: bool = Field(default=False, env="DB_AUTO_MIGRATE")
     migration_timeout: int = Field(default=300, env="DB_MIGRATION_TIMEOUT")
-    
-    class Config:
-        env_prefix = "DB_"
     
     def get_url(self) -> str:
         """

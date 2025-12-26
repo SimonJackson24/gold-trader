@@ -150,7 +150,7 @@ class Trade(Base):
         Index('idx_trades_status', 'status'),
         Index('idx_trades_entry_time', 'entry_time'),
         Index('idx_trades_profit_loss', 'profit_loss'),
-        Index('idx_trades_open', 'entry_time', postgresql_where="status = 'OPEN'")
+        Index('idx_trades_open', 'entry_time')
     )
 
 

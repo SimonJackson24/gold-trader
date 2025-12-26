@@ -29,14 +29,15 @@ import uvicorn
 from ..config import get_settings
 from ..auth import jwt_handler, require_permission
 from .auth import router as auth_router
-from ..models.signal import Signal
+from ..models.signal import TradingSignal
 from ..models.trade import Trade
-from ..models.market_data import Tick, Candle
-from ..database import get_database
-from ..smart_money.smart_money_engine import SmartMoneyEngine
-from ..signal_generator.signal_generator import SignalGenerator
-from ..trade_manager.trade_manager import TradeManager
-from ..market_data.market_data_processor import MarketDataProcessor
+from ..models.market_data import Tick
+from ..models.candle import Candle
+from ..database.connection import db as database_instance
+from ..analysis.smart_money_engine import SmartMoneyEngine
+from ..trading.signal_generator import SignalGenerator
+from ..trading.trade_manager import TradeManager
+from ..analysis.market_data_processor import MarketDataProcessor
 from ..notifications.telegram_service import TelegramService
 from ..connectors.websocket_server import WebSocketServer
 from ..connectors.mt5_connector import MT5Connector
@@ -99,13 +100,16 @@ async def lifespan(app: FastAPI):
     
     try:
         # Initialize database
-        db = get_database()
-        await db.connect()
+        await database_instance.connect()
         
         # Initialize services
         smart_money_engine = SmartMoneyEngine()
         signal_generator = SignalGenerator()
-        trade_manager = TradeManager()
+        
+        # Get sync session for services that need it
+        with database_instance.get_session() as session:
+            trade_manager = TradeManager(session=session)
+            
         market_data_processor = MarketDataProcessor()
         telegram_service = TelegramService()
         websocket_server = WebSocketServer()
@@ -113,13 +117,13 @@ async def lifespan(app: FastAPI):
         
         # Start services
         await telegram_service.start()
-        await websocket_server.start(market_data_processor)
+        await websocket_server.start()
         await mt5_connector.connect()
         
         # Set up service connections
-        market_data_processor.add_tick_handler(signal_generator.process_tick)
-        signal_generator.add_signal_handler(trade_manager.process_signal)
-        signal_generator.add_signal_handler(telegram_service.send_signal_notification)
+        websocket_server.add_tick_handler(market_data_processor.process_tick)
+        market_data_processor.add_signal_callback(trade_manager.open_trade)
+        market_data_processor.add_signal_callback(telegram_service.send_signal_notification)
         trade_manager.add_trade_handler(telegram_service.send_trade_notification)
         
         logger.info("All services started successfully")
@@ -143,10 +147,9 @@ async def lifespan(app: FastAPI):
             await telegram_service.stop()
         
         # Close database
-        db = get_database()
-        await db.disconnect()
+        await database_instance.disconnect()
         
-        logger.info("All services stopped successfully")
+        logger.info("All services started successfully")
         
     except Exception as e:
         logger.error(f"Error during shutdown: {e}")
@@ -258,7 +261,7 @@ async def create_signal(
     """Create new trading signal."""
     try:
         # Create signal
-        signal = Signal(
+        signal = TradingSignal(
             symbol=signal_request.symbol,
             signal_type=signal_request.signal_type,
             entry_price=signal_request.entry_price,
@@ -524,11 +527,7 @@ async def get_daily_performance(
 ):
     """Get daily performance metrics."""
     try:
-        from ..database import get_database
         from ..database.repositories import PerformanceRepository
-        
-        db = get_database()
-        await db.connect()
         
         # Parse dates or use defaults
         from datetime import datetime, timedelta
@@ -543,7 +542,7 @@ async def get_daily_performance(
             end_dt = datetime.utcnow().date()
         
         # Get performance metrics
-        perf_repo = PerformanceRepository(db.get_session())
+        perf_repo = PerformanceRepository(database_instance.get_session())
         metrics = perf_repo.get_metrics_by_date_range(start_dt, end_dt, instrument)
         
         # Calculate summary statistics
@@ -561,8 +560,6 @@ async def get_daily_performance(
                 "total_profit_loss": 0,
                 "total_pips": 0
             }
-        
-        await db.disconnect()
         
         return {
             "metrics": [metric.to_dict() for metric in metrics],
@@ -590,13 +587,9 @@ async def get_weekly_performance(
 ):
     """Get weekly performance metrics."""
     try:
-        from ..database import get_database
         from ..database.repositories import PerformanceRepository
         from datetime import datetime, timedelta
         import calendar
-        
-        db = get_database()
-        await db.connect()
         
         # Parse dates or use defaults (last 12 weeks)
         if start_date:
@@ -610,7 +603,7 @@ async def get_weekly_performance(
             end_dt = datetime.utcnow().date()
         
         # Get performance metrics
-        perf_repo = PerformanceRepository(db.get_session())
+        perf_repo = PerformanceRepository(database_instance.get_session())
         daily_metrics = perf_repo.get_metrics_by_date_range(start_dt, end_dt, instrument)
         
         # Aggregate daily metrics into weekly data
@@ -663,8 +656,6 @@ async def get_weekly_performance(
                 "total_pips": 0
             }
         
-        await db.disconnect()
-        
         return {
             "metrics": weekly_list,
             "summary": summary,
@@ -691,12 +682,8 @@ async def get_monthly_performance(
 ):
     """Get monthly performance metrics."""
     try:
-        from ..database import get_database
         from ..database.repositories import PerformanceRepository
         from datetime import datetime, timedelta
-        
-        db = get_database()
-        await db.connect()
         
         # Parse dates or use defaults (last 12 months)
         if start_date:
@@ -710,7 +697,7 @@ async def get_monthly_performance(
             end_dt = datetime.utcnow().date()
         
         # Get performance metrics
-        perf_repo = PerformanceRepository(db.get_session())
+        perf_repo = PerformanceRepository(database_instance.get_session())
         daily_metrics = perf_repo.get_metrics_by_date_range(start_dt, end_dt, instrument)
         
         # Aggregate daily metrics into monthly data
@@ -762,8 +749,6 @@ async def get_monthly_performance(
                 "total_profit_loss": 0,
                 "total_pips": 0
             }
-        
-        await db.disconnect()
         
         return {
             "metrics": monthly_list,

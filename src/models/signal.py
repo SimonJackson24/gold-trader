@@ -38,39 +38,29 @@ class TradingSignal:
     """
     # Basic signal information
     signal_id: str
-    instrument: str = "XAUUSD"
     direction: Literal["BUY", "SELL"]
-    
-    # Price levels
     entry_price: Decimal
     stop_loss: Decimal
     take_profit_1: Decimal  # 50% position
     take_profit_2: Decimal  # 50% position
-    
-    # Risk metrics
     risk_reward_ratio: float
     position_size: Decimal
     risk_percentage: float
-    
-    # SMC context
     setup_type: str  # "FVG+OB", "LIQUIDITY_SWEEP", "BREAKOUT", etc.
     market_structure: str  # "BOS", "CHoCH", "RANGE"
-    confluence_factors: List[str] = field(default_factory=list)
     confidence_score: float  # 0.0 to 1.0
-    
-    # Timeframe analysis
+
+    # Fields with default values
+    instrument: str = "XAUUSD"
+    confluence_factors: List[str] = field(default_factory=list)
     h4_context: Optional[str] = None
     h1_context: Optional[str] = None
     m15_context: Optional[str] = None
-    
-    # Session and timing
     session: SessionType = SessionType.LONDON
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
     expires_at: Optional[datetime] = None
     status: SignalStatus = SignalStatus.ACTIVE
-    
-    # Additional metadata
     telegram_message_id: Optional[int] = None
     notes: Optional[str] = None
     

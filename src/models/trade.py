@@ -77,46 +77,34 @@ class Trade:
     Tracks trade from entry to exit with all intermediate
     states, partial closes, and performance metrics.
     """
-    # Primary identifiers
+    # Trade details
+    direction: Literal["BUY", "SELL"]
+    position_size: Decimal
+    profit_loss: Decimal
+    profit_loss_pips: Decimal
+    profit_loss_percentage: Decimal
+
+    # Fields with default values or Optional
     trade_id: Optional[int] = None
     signal_id: Optional[str] = None
-    
-    # Trade details
     instrument: str = "XAUUSD"
-    direction: Literal["BUY", "SELL"]
     entry_time: Optional[datetime] = None
     exit_time: Optional[datetime] = None
-    
-    # Price levels
     entry_price: Optional[Decimal] = None
     exit_price: Optional[Decimal] = None
     stop_loss: Optional[Decimal] = None
     take_profit_1: Optional[Decimal] = None
     take_profit_2: Optional[Decimal] = None
-    
-    # Price tracking
     highest_price: Optional[Decimal] = None
     lowest_price: Optional[Decimal] = None
     current_price: Optional[Decimal] = None
-    
-    # Position and P&L
-    position_size: Decimal = Decimal('0')
-    profit_loss: Decimal = Decimal('0')
-    profit_loss_pips: Decimal = Decimal('0')
-    profit_loss_percentage: Decimal = Decimal('0')
-    
-    # Status and management
     status: TradeStatus = TradeStatus.PENDING
     exit_reason: Optional[ExitReason] = None
-    
-    # Trade management flags
     partial_closes: List[PartialClose] = field(default_factory=list)
     tp1_hit: bool = False
     tp2_hit: bool = False
     sl_hit: bool = False
     breakeven_moved: bool = False
-    
-    # Metadata
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
     notes: Optional[str] = None

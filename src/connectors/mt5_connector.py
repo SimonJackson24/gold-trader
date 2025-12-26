@@ -8,14 +8,16 @@ through WebSocket communication.
 import asyncio
 import json
 import logging
-from typing import Dict, List, Optional, Callable
+import random
+from typing import Dict, List, Optional, Callable, Set
 from datetime import datetime, timedelta
 from decimal import Decimal
 import MetaTrader5 as mt5
 import websockets
 from websockets.client import WebSocketClientProtocol
 
-from ..models.market_data import Tick, Candle
+from ..models.market_data import Tick
+from ..models.candle import Candle
 from ..models.trade import Trade
 from ..config import get_settings
 
@@ -57,10 +59,25 @@ class MT5Connector:
     
     async def connect(self):
         """Connect to MT5 terminal and WebSocket server."""
+        if getattr(self.settings, 'dev_mock_mt5', False):
+            self.logger.info("MT5 connector starting in MOCK mode")
+            self.is_connected = True
+            # Even in mock mode, we still connect to our own websocket if needed
+            try:
+                await self._connect_websocket()
+            except Exception as e:
+                self.logger.warning(f"Could not connect to local websocket in mock mode: {e}")
+            return
+
         try:
             # Initialize MT5
-            if not mt5.initialize():
-                raise Exception("Failed to initialize MT5")
+            if not mt5.initialize(
+                login=int(self.settings.mt5_login),
+                password=self.settings.mt5_password,
+                server=self.settings.mt5_server,
+                path=self.settings.mt5_path
+            ):
+                raise Exception(f"Failed to initialize MT5: {mt5.last_error()}")
             
             self.mt5_initialized = True
             self.logger.info("MT5 initialized successfully")
@@ -75,23 +92,6 @@ class MT5Connector:
             self.logger.error(f"Failed to connect MT5 connector: {e}")
             await self.disconnect()
             raise
-    
-    async def disconnect(self):
-        """Disconnect from MT5 terminal and WebSocket server."""
-        self.is_connected = False
-        
-        # Disconnect WebSocket
-        if self.websocket:
-            await self.websocket.close()
-            self.websocket = None
-            self.is_websocket_connected = False
-        
-        # Shutdown MT5
-        if self.mt5_initialized:
-            mt5.shutdown()
-            self.mt5_initialized = False
-        
-        self.logger.info("MT5 connector disconnected")
     
     async def _connect_websocket(self):
         """Connect to WebSocket server."""
@@ -235,12 +235,26 @@ class MT5Connector:
     
     async def _stream_symbol_data(self, symbol: str):
         """Stream real-time data for symbol."""
+        mock_price = Decimal('2000.00')
         while symbol in self.subscribed_symbols and self.is_connected:
             try:
-                # Get tick data from MT5
-                tick = mt5.symbol_info_tick(symbol)
-                if tick:
-                    # Create tick object
+                if not self.mt5_initialized:
+                    # Generate mock tick
+                    mock_price += Decimal(str(random.uniform(-0.1, 0.1)))
+                    tick_data = Tick(
+                        symbol=symbol,
+                        timestamp=datetime.utcnow(),
+                        bid=mock_price,
+                        ask=mock_price + Decimal('0.2'),
+                        volume=random.randint(1, 10)
+                    )
+                else:
+                    # Get tick data from MT5
+                    tick = mt5.symbol_info_tick(symbol)
+                    if not tick:
+                        await asyncio.sleep(1)
+                        continue
+                        
                     tick_data = Tick(
                         symbol=symbol,
                         timestamp=datetime.fromtimestamp(tick.time),
@@ -249,23 +263,26 @@ class MT5Connector:
                         last=Decimal(str(tick.last)) if tick.last else None,
                         volume=tick.volume
                     )
-                    
-                    # Send tick to WebSocket server
-                    if self.websocket:
+                
+                # Send tick to WebSocket server
+                if self.websocket:
+                    try:
                         await self.websocket.send(json.dumps({
                             'type': 'tick',
                             'data': tick_data.to_dict()
                         }))
-                    
-                    # Call tick handlers
-                    for handler in self.tick_handlers:
-                        try:
-                            await handler(tick_data)
-                        except Exception as e:
-                            self.logger.error(f"Error in tick handler: {e}")
+                    except Exception as e:
+                        self.logger.debug(f"Could not send to websocket: {e}")
+                
+                # Call tick handlers
+                for handler in self.tick_handlers:
+                    try:
+                        await handler(tick_data)
+                    except Exception as e:
+                        self.logger.error(f"Error in tick handler: {e}")
                 
                 # Wait before next tick
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(1.0 if not self.mt5_initialized else 0.1)
                 
             except Exception as e:
                 self.logger.error(f"Error streaming data for {symbol}: {e}")

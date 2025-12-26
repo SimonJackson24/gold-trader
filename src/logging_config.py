@@ -99,12 +99,14 @@ def setup_logging():
     if settings.debug:
         console_formatter = ColoredFormatter(
             fmt='[{asctime}] [{levelname}] {name}: {message}',
-            datefmt='%Y-%m-%d %H:%M:%S'
+            datefmt='%Y-%m-%d %H:%M:%S',
+            style='{'
         )
     else:
         console_formatter = logging.Formatter(
             fmt='[{asctime}] [{levelname}] {name}: {message}',
-            datefmt='%Y-%m-%d %H:%M:%S'
+            datefmt='%Y-%m-%d %H:%M:%S',
+            style='{'
         )
     
     console_handler.setFormatter(console_formatter)
@@ -124,7 +126,8 @@ def setup_logging():
     else:
         file_formatter = logging.Formatter(
             fmt='[{asctime}] [{levelname}] {name} [{module}:{funcName}:{lineno}]: {message}',
-            datefmt='%Y-%m-%d %H:%M:%S'
+            datefmt='%Y-%m-%d %H:%M:%S',
+            style='{'
         )
     
     file_handler.setFormatter(file_formatter)
@@ -145,7 +148,8 @@ def setup_logging():
     else:
         error_formatter = logging.Formatter(
             fmt='[{asctime}] [{levelname}] {name} [{module}:{funcName}:{lineno}]: {message}\n{exc_text}',
-            datefmt='%Y-%m-%d %H:%M:%S'
+            datefmt='%Y-%m-%d %H:%M:%S',
+            style='{'
         )
     
     error_handler.setFormatter(error_formatter)
@@ -174,7 +178,8 @@ def setup_logging():
     else:
         trading_formatter = logging.Formatter(
             fmt='[{asctime}] [{levelname}] {name}: {message}',
-            datefmt='%Y-%m-%d %H:%M:%S'
+            datefmt='%Y-%m-%d %H:%M:%S',
+            style='{'
         )
     
     trading_handler.setFormatter(trading_formatter)
