@@ -1,4 +1,6 @@
 <#
+# Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 .SYNOPSIS
     Gold Trader MT5 Connector - One-Command Deployment Script for Windows
     

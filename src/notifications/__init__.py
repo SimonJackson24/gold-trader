@@ -7,8 +7,8 @@ Provides notification services including:
 - SMS notifications (future)
 """
 
+# Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 from .telegram_service import TelegramService
 
-__all__ = [
-    'TelegramService'
-]
+__all__ = ["TelegramService"]

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 # ============================================================================
 # GOLD TRADER - ONE-COMMAND DEPLOYMENT SCRIPT
 # ============================================================================

@@ -5,12 +5,14 @@ This module orchestrates various SMC components to provide a comprehensive
 market analysis based on institutional trading concepts.
 """
 
+# Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 from typing import List, Dict, Any
 from ..models.candle import Candle
 from .fvg_detector import FairValueGapDetector
 from .order_block_detector import OrderBlockDetector
 from .liquidity_analyzer import LiquidityAnalyzer
-from .structure_analyzer import MarketStructure # Corrected import
+from .structure_analyzer import MarketStructure  # Corrected import
 
 
 class SmartMoneyEngine:
@@ -26,7 +28,7 @@ class SmartMoneyEngine:
         self.fvg_detector = FairValueGapDetector()
         self.order_block_detector = OrderBlockDetector()
         self.liquidity_analyzer = LiquidityAnalyzer()
-        self.market_structure = MarketStructure() # Using the corrected class name
+        self.market_structure = MarketStructure()  # Using the corrected class name
 
     async def analyze_candles(self, candles: List[Candle]) -> Dict[str, Any]:
         """

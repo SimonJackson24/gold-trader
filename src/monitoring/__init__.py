@@ -8,6 +8,8 @@ Provides:
 - System monitoring
 """
 
+# Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 from .metrics import (
     MetricsRegistry,
     Counter,
@@ -18,7 +20,7 @@ from .metrics import (
     get_registry,
     get_system_metrics,
     get_application_metrics,
-    monitor_performance
+    monitor_performance,
 )
 
 from .health import (
@@ -27,24 +29,24 @@ from .health import (
     HealthResult,
     HealthStatus,
     get_health_checker,
-    setup_health_checks
+    setup_health_checks,
 )
 
 __all__ = [
-    'MetricsRegistry',
-    'Counter',
-    'Gauge',
-    'Histogram',
-    'SystemMetrics',
-    'ApplicationMetrics',
-    'get_registry',
-    'get_system_metrics',
-    'get_application_metrics',
-    'monitor_performance',
-    'HealthChecker',
-    'HealthCheck',
-    'HealthResult',
-    'HealthStatus',
-    'get_health_checker',
-    'setup_health_checks'
+    "MetricsRegistry",
+    "Counter",
+    "Gauge",
+    "Histogram",
+    "SystemMetrics",
+    "ApplicationMetrics",
+    "get_registry",
+    "get_system_metrics",
+    "get_application_metrics",
+    "monitor_performance",
+    "HealthChecker",
+    "HealthCheck",
+    "HealthResult",
+    "HealthStatus",
+    "get_health_checker",
+    "setup_health_checks",
 ]

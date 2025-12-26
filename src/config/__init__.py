@@ -5,6 +5,8 @@ Handles loading, validation, and management of all system
 configuration parameters including trading, SMC, and API settings.
 """
 
+# Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 from .settings import Settings, get_settings
 from .database import DatabaseConfig
 from .trading import TradingConfig
@@ -17,5 +19,5 @@ __all__ = [
     "DatabaseConfig",
     "TradingConfig",
     "SMCConfig",
-    "TelegramConfig"
+    "TelegramConfig",
 ]

@@ -25,10 +25,9 @@ services:
   # Development database with persistent data
   postgres:
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
-      - ./init-dev.sql:/docker-entrypoint-initdb.d/init.sql
 
   # Redis with persistence
   redis:

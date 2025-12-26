@@ -5,9 +5,24 @@ Handles database connections, models, repositories,
 and database operations for PostgreSQL.
 """
 
+# Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 from .connection import Database, get_db, get_async_db
-from .models import Base, Signal, Trade, PerformanceMetric, PriceHistory, SystemConfig, AuditLog
-from .repositories import SignalRepository, TradeRepository, PerformanceRepository, ConfigRepository
+from .models import (
+    Base,
+    Signal,
+    Trade,
+    PerformanceMetric,
+    PriceHistory,
+    SystemConfig,
+    AuditLog,
+)
+from .repositories import (
+    SignalRepository,
+    TradeRepository,
+    PerformanceRepository,
+    ConfigRepository,
+)
 
 __all__ = [
     "Database",
@@ -23,5 +38,5 @@ __all__ = [
     "SignalRepository",
     "TradeRepository",
     "PerformanceRepository",
-    "ConfigRepository"
+    "ConfigRepository",
 ]

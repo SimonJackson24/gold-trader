@@ -5,6 +5,8 @@ Implements SMC algorithms including FVG detection,
 order block identification, liquidity analysis, and market structure.
 """
 
+# Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 from .fvg_detector import FairValueGapDetector
 from .order_block_detector import OrderBlockDetector
 from .liquidity_analyzer import LiquidityAnalyzer
@@ -14,9 +16,9 @@ from .smart_money_engine import SmartMoneyEngine
 
 __all__ = [
     "FairValueGapDetector",
-    "OrderBlockDetector", 
+    "OrderBlockDetector",
     "LiquidityAnalyzer",
     "MarketStructure",
     "ConfluenceAnalyzer",
-    "SmartMoneyEngine"
+    "SmartMoneyEngine",
 ]

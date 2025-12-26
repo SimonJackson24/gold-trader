@@ -7,10 +7,9 @@ Provides connectivity to external systems including:
 - Telegram notifications
 """
 
+# Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 from .mt5_connector import MT5Connector
 from .websocket_server import WebSocketServer
 
-__all__ = [
-    'MT5Connector',
-    'WebSocketServer'
-]
+__all__ = ["MT5Connector", "WebSocketServer"]

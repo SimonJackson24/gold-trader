@@ -5,6 +5,8 @@ Provides command-line interface for running the application
 with various options and configurations.
 """
 
+# Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 import asyncio
 import argparse
 import sys

@@ -9,6 +9,8 @@ Provides REST API endpoints for:
 - Account information
 """
 
+# Copyright (c) 2024 Simon Callaghan. All rights reserved.
+
 from .main import app
 
-__all__ = ['app']
+__all__ = ["app"]
