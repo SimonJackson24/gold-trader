@@ -36,10 +36,13 @@ COPY . .
 # Create necessary directories
 RUN mkdir -p logs data
 
-# Create non-root user with development permissions
-RUN useradd --create-home --shell /bin/bash --groups sudo app \
-    && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers \
-    && chown -R app:app /app
+# Create non-root user for development
+RUN useradd --create-home --shell /bin/bash app && \
+    echo 'app ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Copy application code and set ownership
+COPY --chown=app:app . .
+
 USER app
 
 # Expose ports
