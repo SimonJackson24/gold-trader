@@ -77,7 +77,6 @@ ssl/
 .dockerignore
 docker-compose.override.yml
 Dockerfile.dev
-requirements-dev.txt
 
 # Monitoring and logging
 monitoring/
