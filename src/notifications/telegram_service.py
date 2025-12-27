@@ -56,6 +56,12 @@ class TelegramService:
 
     async def start(self):
         """Start Telegram bot service."""
+        # Check if Telegram is configured
+        if not self.settings.telegram_bot_token:
+            self.logger.info("Telegram bot token not configured - skipping Telegram service")
+            self.is_running = False
+            return
+            
         if getattr(self.settings, "dev_mock_telegram", False):
             self.logger.info("Telegram bot service starting in MOCK mode")
             self.is_running = True
@@ -81,7 +87,8 @@ class TelegramService:
 
         except Exception as e:
             self.logger.error(f"Failed to start Telegram bot: {e}")
-            raise
+            # Don't raise - allow app to continue without Telegram
+            self.is_running = False
 
     async def stop(self):
         """Stop Telegram bot service."""
