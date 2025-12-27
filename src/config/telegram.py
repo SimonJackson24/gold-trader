@@ -21,10 +21,10 @@ class TelegramConfig(BaseSettings):
     """
 
     # Bot authentication
-    bot_token: str = Field(
-        default="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz", env="TELEGRAM_BOT_TOKEN"
+    bot_token: Optional[str] = Field(
+        default=None, env="TELEGRAM_BOT_TOKEN"
     )
-    chat_id: str = Field(default="-1001234567890", env="TELEGRAM_CHAT_ID")
+    chat_id: Optional[str] = Field(default=None, env="TELEGRAM_CHAT_ID")
 
     # Channel settings
     channel_username: Optional[str] = Field(
@@ -116,13 +116,17 @@ class TelegramConfig(BaseSettings):
     @validator("bot_token")
     def validate_bot_token(cls, v):
         """Validate bot token format."""
-        if not v or len(v) < 20:
+        if not v or v == "PLACEHOLDER_TOKEN":
+            return None  # Telegram disabled
+        if len(v) < 20:
             raise ValueError("Invalid bot token format")
         return v
 
     @validator("chat_id")
     def validate_chat_id(cls, v):
         """Validate chat ID format."""
+        if not v or v == "PLACEHOLDER_CHAT_ID":
+            return None  # Telegram disabled
         if not v:
             raise ValueError("Chat ID is required")
         return v
@@ -184,8 +188,10 @@ class TelegramConfig(BaseSettings):
         Get Telegram bot API URL.
 
         Returns:
-            Telegram API URL with bot token
+            Telegram API URL with bot token, or None if not configured
         """
+        if not self.bot_token:
+            return None
         return f"https://api.telegram.org/bot{self.bot_token}"
 
     def get_file_url(self, file_path: str) -> str:
@@ -196,8 +202,10 @@ class TelegramConfig(BaseSettings):
             file_path: File path on Telegram servers
 
         Returns:
-            Complete file URL
+            Complete file URL, or None if not configured
         """
+        if not self.bot_token:
+            return None
         return f"https://api.telegram.org/file/bot{self.bot_token}/{file_path}"
 
     def format_signal_message(self, signal_data: dict) -> str:
