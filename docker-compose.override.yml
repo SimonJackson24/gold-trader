@@ -32,7 +32,7 @@ services:
   # Redis with persistence
   redis:
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_dev_data:/data
 
