@@ -18,6 +18,9 @@ services:
       - LOG_LEVEL=DEBUG
       - RELOAD=true
       - PYTHONPATH=/app
+      - CORS_ORIGINS=["*"]
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
+      - ENVIRONMENT=development
     command: python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"  # REST API
