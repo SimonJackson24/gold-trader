@@ -5,6 +5,7 @@ version: '3.8'
 services:
   # Development configuration for trading app
   trading_app:
+    user: root
     build:
       context: .
       dockerfile: Dockerfile.dev
