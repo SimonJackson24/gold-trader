@@ -16,7 +16,7 @@ services:
       - DEBUG=true
       - LOG_LEVEL=DEBUG
       - RELOAD=true
-    command: python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+    command: python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"  # REST API
       - "8001:8001"  # WebSocket
