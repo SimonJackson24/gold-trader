@@ -40,7 +40,7 @@ from ..trading.trade_manager import TradeManager
 from ..analysis.market_data_processor import MarketDataProcessor
 from ..notifications.telegram_service import TelegramService
 from ..connectors.websocket_server import WebSocketServer
-from ..connectors.mt5_connector import MT5Connector
+from ..connectors import MT5Connector, MT5_AVAILABLE
 
 
 # Pydantic models for API requests/responses
@@ -113,12 +113,19 @@ async def lifespan(app: FastAPI):
         market_data_processor = MarketDataProcessor()
         telegram_service = TelegramService()
         websocket_server = WebSocketServer()
-        mt5_connector = MT5Connector()
+        
+        # Initialize MT5Connector only if available (Windows-only)
+        if MT5_AVAILABLE and MT5Connector:
+            mt5_connector = MT5Connector()
+        else:
+            mt5_connector = None
+            logger.warning("MT5Connector not available (Windows-only module)")
         
         # Start services
         await telegram_service.start()
         await websocket_server.start()
-        await mt5_connector.connect()
+        if mt5_connector:
+            await mt5_connector.connect()
         
         # Set up service connections
         websocket_server.add_tick_handler(market_data_processor.process_tick)
@@ -442,8 +449,11 @@ async def get_balance(
 ):
     """Get account balance information."""
     try:
-        balance_info = await mt5_connector.get_account_info()
-        return balance_info
+        if mt5_connector:
+            balance_info = await mt5_connector.get_account_info()
+            return balance_info
+        else:
+            return {"message": "MT5 not available in this environment (Windows-only)"}
     except Exception as e:
         logger.error(f"Error getting balance: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -457,11 +467,14 @@ async def get_positions(
 ):
     """Get open positions."""
     try:
-        positions = await mt5_connector.get_positions()
-        return {
-            "positions": positions,
-            "total": len(positions)
-        }
+        if mt5_connector:
+            positions = await mt5_connector.get_positions()
+            return {
+                "positions": positions,
+                "total": len(positions)
+            }
+        else:
+            return {"message": "MT5 not available in this environment (Windows-only)", "positions": [], "total": 0}
     except Exception as e:
         logger.error(f"Error getting positions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
